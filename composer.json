@@ -1,0 +1,30 @@
+{
+    "name": "robvanaarle/ultimo-orm",
+    "description": "Object relational mapper",
+    "type": "library",
+    "keywords": [
+        "orm",
+        "lightweight"
+    ],
+    "license": "BSD-3-Clause",
+    "authors": [
+	  		{
+	    	  "name": "Rob van Aarle"
+	  		}
+	  ],
+    "repositories": [
+      	{
+        	"type": "vcs",
+        	"url": "https://github.com/robvanaarle/trumpet"
+      	}
+    ],
+    "require": {
+        "robvanaarle/trumpet": "dev-master"
+    },
+    "autoload": {
+    		"psr-4": {
+       			"ultimo\\": "src/ultimo/"
+    		}
+  }
+}
+
