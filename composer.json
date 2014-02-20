@@ -12,15 +12,6 @@
 	    	  "name": "Rob van Aarle"
 	  		}
 	  ],
-    "repositories": [
-      	{
-        	"type": "vcs",
-        	"url": "https://github.com/robvanaarle/trumpet"
-      	}
-    ],
-    "require": {
-        "robvanaarle/trumpet": "dev-master"
-    },
     "autoload": {
     		"psr-4": {
        			"ultimo\\": "src/ultimo/"
