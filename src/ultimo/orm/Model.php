@@ -573,6 +573,28 @@ abstract class Model implements \ArrayAccess {
   }
   
   /**
+   * Returns a StaticModel of a related model.
+   * @param string $name Name of relation.
+   * @return StaticModel StaticModel of related model.
+   */
+  public function related($name) {
+    // check if requested name is a valid relation name, if so, return static model
+    if (!array_key_exists($name, static::$relations)) {
+      throw new exceptions\ModelException("Undefined relation {$name}");
+    }
+    
+    $relation = static::$relations[$name];
+    $model = $this;
+    $staticModel = $this->_manager->getStaticModel($relation[0]);
+    $staticModel->scope(function ($q) use ($relation, $model) {
+      foreach ($relation[1] as $local => $foreign) {
+        $q->where('@'.$foreign . ' = ?', array($model->$local));
+      }
+    });
+    return $staticModel;
+  }
+  
+  /**
    * Returns a new StaticModel instance for this model.
    * @return \ultimo\orm\StaticModel A new StaticModel instance for this model.
    */
