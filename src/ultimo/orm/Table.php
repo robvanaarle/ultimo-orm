@@ -218,6 +218,39 @@ class Table implements ModelManager {
     $model->markAsSaved();
     return true;
   }
+  
+  /**
+   * Inserts multiple models into the manager. It assumes all models are of the
+   * same type.
+   * @param array $models The models to insert.
+   * @return boolean Whether the insertion was successful.
+   */
+  public function modelMultiInsert(array $models) {
+    if (count($models) == 0) {
+      return true;
+    }
+    
+    $modelValues = $models[0]->toArray();
+    $sql = 'INSERT INTO ' . $this->getTableIdentifier() . "\n";
+    $sql .= '(' . $this->implodeColumnList(array_keys($modelValues)) . ')' . "\n";
+    $sql .= 'VALUES ';
+    
+    $values = array();
+    foreach ($models as $model) {
+      $modelValues = $model->toArray();
+      $values[] = '(' . $this->implodeValueList($modelValues) . ')';
+    }
+    $sql .= "\n" . implode(",\n", $values);
+    
+    // perform the query, and check if an error has occured
+    $this->connection->exec($sql);
+    
+    if ($this->connection->errorCode() != '00000') {
+      return false;
+    }
+    
+    return true;
+  }
 
   /**
    * Updates the model in the manager.

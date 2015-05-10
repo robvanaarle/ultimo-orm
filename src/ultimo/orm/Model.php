@@ -341,6 +341,19 @@ abstract class Model implements \ArrayAccess {
   }
   
   /**
+   * 
+   * @param array $models
+   * @return type
+   */
+  static public function multiInsert(Manager $manager, array $models) {
+    foreach ($models as $model) {
+      $model->triggerEvent('beforeInsert');
+    }
+    return $manager->modelMultiInsert($models);
+    // no afterInsert event, as auto increment field is not set
+  }
+  
+  /**
    * Saves the model. If it is a new model, the object is inserted, else it is
    * updated. This is done by calling manager.
    * @return boolean Whether the save was successful.

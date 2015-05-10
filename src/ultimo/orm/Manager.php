@@ -240,6 +240,20 @@ class Manager implements ModelManager {
   public function modelInsert(Model $model) {
     return $this->getTable(get_class($model))->modelInsert($model);
   }
+  
+  /**
+   * Inserts multiple models into the manager. It assumes all models are of the
+   * same type.
+   * @param array $models The models to insert.
+   * @return boolean Whether the insertion was successful.
+   */
+  public function modelMultiInsert(array $models) {
+    if (count($models) == 0) {
+      return true;
+    }
+    
+    return $this->getTable(get_class($models[0]))->modelMultiInsert($models);
+  }
 
   /**
    * Updates the model in the manager.
