@@ -127,9 +127,13 @@ class Sequence extends \ultimo\orm\plugins\ModelPlugin {
    * Scopes
    */
   
-  static public function atIndex($index) {
-    return function ($q) use ($index) {
-      return $q->where('@index = ?', array($index));
+  static public function atIndex($index, array $sequenceFieldValues) {
+    return function ($q) use ($index, $sequenceFieldValues) {
+      $q->where('@index = ?', array($index));
+      foreach($sequenceFieldValues as $name => $value) {
+        $q->where('@' . $name . ' = ?', array($value));
+      }
+      return $q;
     };
   }
   
@@ -144,9 +148,16 @@ class Sequence extends \ultimo\orm\plugins\ModelPlugin {
    */
   
   static public function getMaxIndex($s) {
-    $row = $s->query()
-             ->alias('MAX(@index)', '@max_index')
-             ->first(array(), true);
+    $modelClass = $s->getModelClass();
+    
+    $query = $s->query()
+             ->alias('MAX(@index)', '@max_index');
+    
+    foreach ($modelClass::$_sequenceGroupFields as $field) {
+      $query->groupBy('@' . $field);
+    }
+    
+    $row = $query->first(array(), true);
    
     if ($row === null) {
       return -1;
@@ -155,17 +166,29 @@ class Sequence extends \ultimo\orm\plugins\ModelPlugin {
     }
   }
   
-  static public function getFirst($s, $assoc=false) {
-    return $s->atIndex(0)
-             ->first($assoc);
+  // TODO: fix
+  /*static public function getFirst($s, array $sequenceFieldValues, $assoc=false) {
+    $query = $s->query();
+    static::addSequenceFieldValues($query, $sequenceFieldValues);
+    return $query->atIndex(0, $sequenceFieldValues)
+                 ->first(array(), $assoc);
   }
   
-  static public function getLast($s, $assoc=false) {   
-    return $s->query()
-             ->order('@index', 'DESC')
-             ->first(array(), $assoc);
-  }
+  static public function getLast($s, array $sequenceFieldValues, $assoc=false) {   
+    $query = $s->query();
+    static::addSequenceFieldValues($query, $sequenceFieldValues);
+    return $query->order('@index', 'DESC')
+                 ->first(array(), $assoc);
+  }*/
   
+  static protected function addSequenceFieldValues($query, array $sequenceFieldValues) {
+    // TODO: check if all sequence fields are present
+    foreach($sequenceFieldValues as $name => $value) {
+      $query->where('@' . $name . ' = ?', array($value));
+    }
+  }
+
+
   /**
    * Events
    */

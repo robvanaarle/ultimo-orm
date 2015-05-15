@@ -32,6 +32,10 @@ class StaticModel {
     $this->manager = $manager;
   }
   
+  public function getModelClass() {
+    return $this->manager->getModelClass($this->modelName);
+  }
+  
   /**
    * Invoked if a method does not exist. Used for scopes, fetchters and static
    * methods on the model (and its plugins).
