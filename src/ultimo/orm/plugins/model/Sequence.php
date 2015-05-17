@@ -153,8 +153,10 @@ class Sequence extends \ultimo\orm\plugins\ModelPlugin {
     $query = $s->query()
              ->alias('MAX(@index)', '@max_index');
     
-    foreach ($modelClass::$_sequenceGroupFields as $field) {
-      $query->groupBy('@' . $field);
+    if (isset($modelClass::$_sequenceGroupFields)) {
+      foreach ($modelClass::$_sequenceGroupFields as $field) {
+        $query->groupBy('@' . $field);
+      }
     }
     
     $row = $query->first(array(), true);
