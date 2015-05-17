@@ -270,12 +270,29 @@ class Query {
    * @return Query This instance for fluid design.
    */
   public function where($where, array $params = array()) {
+    // replace ?* placeholders
+    $resultingParams = array();
+    foreach ($params as $index => $param) {
+      if (is_array($param)) {
+        $pos = strpos($where, '?*');
+        if ($pos === false) {
+          throw new exceptions\QueryException("Missing '?*' placeholder for array parameter at index {$index}.");
+        }
+        $replacement = '(' . implode(', ', array_fill(0, count($param), '?')) . ')';
+        $where = preg_replace('/\?\*/', $replacement, $where, 1);
+        $resultingParams = array_merge($resultingParams, $param);
+      } else {
+        $resultingParams[] = $param;
+      }
+    }
+    
+    
     if ($this->where != '') {
       $this->where .= "\n AND (" . $where . ')';
     } else {
       $this->where = '(' . $where . ')';
     }
-    $this->params['where'] = array_merge($this->params['where'], $params);
+    $this->params['where'] = array_merge($this->params['where'], $resultingParams);
     return $this;
   }
   
@@ -528,6 +545,8 @@ class Query {
       // slower, but deletes are less common
       $sql = preg_replace_callback('/@([A-z\.]+)/', array($this, '_callback_replaceRelationVars'), $sql);
     }
+    
+    //echo "<pre>{$sql}</pre>"; exit();
     
     return $sql;
   }
