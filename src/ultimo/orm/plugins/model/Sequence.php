@@ -73,7 +73,7 @@ class Sequence extends \ultimo\orm\plugins\ModelPlugin {
     
     $maxIndex = $this->model->staticModel()->scope($this->getLocalScope())
                                            ->getMaxIndex();
-    
+
     if ($this->model->index >= $maxIndex || $count <= 0) {
       return;
     }
@@ -151,20 +151,15 @@ class Sequence extends \ultimo\orm\plugins\ModelPlugin {
     $modelClass = $s->getModelClass();
     
     $query = $s->query()
-             ->alias('MAX(@index)', '@max_index');
+               ->withoutMaster()
+               ->alias('MAX(@index)', '@max_index');
     
-    if (isset($modelClass::$_sequenceGroupFields)) {
-      foreach ($modelClass::$_sequenceGroupFields as $field) {
-        $query->groupBy('@' . $field);
-      }
-    }
-    
-    $row = $query->first(array(), true);
+    $rows = $query->fetchRaw();
    
-    if ($row === null) {
+    if (empty($rows)) {
       return -1;
     } else {
-      return $row['max_index'];
+      return $rows[0]['max_index'];
     }
   }
   

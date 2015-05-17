@@ -143,6 +143,12 @@ class Query {
   protected $calcFoundRowsKey = null;
   
   /**
+   * Whether to include the master table in the result
+   * @var bool
+   */
+  protected $withoutMaster = false;
+  
+  /**
    * Parameters to replace placeholders in the query with.
    * @var array
    */
@@ -425,7 +431,7 @@ class Query {
     
     // initialize the array which holds all select-clause fields
     $fields = array();
-    if ($mode == self::MODE_SELECT) {
+    if ($mode == self::MODE_SELECT && !$this->withoutMaster) {
       $fields[] = '`' . $masterAlias . '`.*';
     } elseif ($mode == self::MODE_UPDATE) {
       $fields[] = '`' . $masterAlias . '`';
@@ -546,7 +552,7 @@ class Query {
       $sql = preg_replace_callback('/@([A-z\.]+)/', array($this, '_callback_replaceRelationVars'), $sql);
     }
     
-    //echo "<pre>{$sql}</pre>"; exit();
+    //echo "<pre>{$sql}</pre>";
     
     return $sql;
   }
@@ -791,6 +797,15 @@ class Query {
    * @return array The result of the query.
    */
   protected function fetchResult(array $params, $assoc) {
+    return $this->transform($this->fetchRaw($params), $assoc);
+  }
+  
+  /**
+   * Excecutes the query and returns the raw result
+   * @param array $params The parameters to replace in the query.
+   * @return array The result of the query.
+   */
+  public function fetchRaw(array $params = array()) {
     $sql = $this->toString(self::MODE_SELECT);
     //echo '<pre>' . $sql . '</pre>';
     $statement = $this->connection->prepare($sql);
@@ -798,7 +813,6 @@ class Query {
     $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
     $statement->closeCursor();
     
-    $result = $this->transform($result, $assoc);
     return $result;
   }
   
@@ -955,6 +969,16 @@ class Query {
    */
   public function getManager() {
     return $this->manager;
+  }
+  
+  /**
+   * Sets whether to include the master table fields in the result. Only usable
+   * when fetching the raw data.
+   * @return Query This instance for fluid design.
+   */
+  public function withoutMaster() {
+    $this->withoutMaster = true;
+    return $this;
   }
   
 }
