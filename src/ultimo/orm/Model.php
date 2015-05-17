@@ -664,7 +664,7 @@ abstract class Model implements \ArrayAccess {
     }
     
     if (method_exists($this, $eventName)) {
-      $plugin->$eventName();
+      $this->$eventName();
     }
   }
   
