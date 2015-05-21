@@ -797,7 +797,22 @@ class Query {
    * @return array The result of the query.
    */
   protected function fetchResult(array $params, $assoc) {
-    return $this->transform($this->fetchRaw($params), $assoc);
+    return $this->transform($this->execute($params), $assoc);
+  }
+  
+  /**
+   * Excecutes the query and returns the raw result
+   * @param array $params The parameters to replace in the query.
+   * @return array The result of the query.
+   */
+  protected function execute(array $params) {
+    $sql = $this->toString(self::MODE_SELECT);
+    $statement = $this->connection->prepare($sql);
+    $statement->execute($params);
+    $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+    $statement->closeCursor();
+    
+    return $result;
   }
   
   /**
@@ -806,14 +821,7 @@ class Query {
    * @return array The result of the query.
    */
   public function fetchRaw(array $params = array()) {
-    $sql = $this->toString(self::MODE_SELECT);
-    //echo '<pre>' . $sql . '</pre>';
-    $statement = $this->connection->prepare($sql);
-    $statement->execute($params);
-    $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
-    $statement->closeCursor();
-    
-    return $result;
+    return $this->execute($this->buildParams($params));
   }
   
   /**
